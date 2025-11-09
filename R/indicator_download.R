@@ -21,12 +21,11 @@ gho_base <- "https://ghoapi.azureedge.net/api"
 # List of Indicators we are interested in
 indicator_codes <- c("WSH_WATER_SAFELY_MANAGED",
                      "WSH_WATER_BASIC",
-                     "WSH_20_WAT",
-                     "WHOSIS_000001",
-                     "SDGWSHBOD",
                      "WSH_10_WAT",
-                     "MORT_100",
-                     "RHR_IPV")
+                     "WSH_20_WAT",
+                     "SDGWSHBOD",
+                     "WHOSIS_000001"
+                     )
 
 # Create a concatenate of indicator codes, separated by "or"
 url_codes <- paste0(paste0("IndicatorCode eq '", indicator_codes, "'"), collapse = " or ")
@@ -37,7 +36,7 @@ url  <- paste0(
   URLencode(url_codes, reserved = TRUE)
 )
 # Retrieve indicator names
-indicator_names <- fromJSON(url)$value %>% as_tibble()
+GHO_indicator_names <- fromJSON(url)$value %>% as_tibble()
 
 # Now download the data
 # Loop through each Indicator Code, if there's data, save to CSV
@@ -52,16 +51,9 @@ for (i in 1 : length(indicator_codes)){
     filename <- paste0(code, ".csv")
     data_to_write <- all_data  %>% 
       as_tibble() %>% 
-      select(any_of(c(
-        "IndicatorCode",
-        "SpatialDim",
-        "TimeDim",
-        "NumericValue"
-      ))) %>% 
       rename(
         Country = SpatialDim,
-        Year    = TimeDim,
-        Value  = NumericValue
+        Year    = TimeDim
       )
     write.csv(data_to_write, paste0(path, filename))
   }
@@ -79,7 +71,7 @@ indicator_codes <- c("SE.ENR.PRIM.FM.ZS",
 
 # Retrieve indicator names
 all_indicator_names <- WDIsearch(string = "", field = "indicator") 
-indicator_names <- all_indicator_names %>% 
+WDI_indicator_names <- all_indicator_names %>% 
   filter(indicator %in% indicator_codes)
 
 # Now download the data
