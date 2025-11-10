@@ -21,7 +21,6 @@ gho_base <- "https://ghoapi.azureedge.net/api"
 # List of Indicators we are interested in
 indicator_codes <- c("WSH_WATER_SAFELY_MANAGED",
                      "WSH_WATER_BASIC",
-                     "WSH_10_WAT",
                      "WSH_20_WAT",
                      "SDGWSHBOD",
                      "WHOSIS_000001"
@@ -107,7 +106,11 @@ time_df <- read_csv(url)
 write_csv(time_df, paste0(path, "WS_TIME_P.csv"))
 
 # Person to collect water
-url <- "https://api.dhsprogram.com/rest/dhs/data/WS_PCDW_P_NDW,WS_PCDW_P_AFM,WS_PCDW_P_AML,WS_PCDW_P_CFM,WS_PCDW_P_CML,WS_PCDW_P_NHH?f=html"
+url <- "https://api.dhsprogram.com/rest/dhs/data/WS_PCDW_P_NDW,WS_PCDW_P_AFM,WS_PCDW_P_AML,WS_PCDW_P_CFM,WS_PCDW_P_CML,WS_PCDW_P_NHH?f=csv"
 person_df <- read_csv(url)
 write_csv(person_df, paste0(path, "WS_PCDW_P.csv"))
 
+# Domestic violence
+url <- "https://api.dhsprogram.com/rest/dhs/data/DV_EXPV_W_EVR?f=csv"
+dv_df <- read_csv(url)
+write_csv(dv_df, paste0(path, "DV_EXPV_W.csv"))
