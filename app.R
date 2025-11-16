@@ -2,6 +2,7 @@ library(shiny)
 library(tidyverse)
 
 tab1_data_df <- read.csv("data/processed/tab1_data.csv")
+tab2_data_df <- read.csv("data/processed/tab2_data.csv")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
