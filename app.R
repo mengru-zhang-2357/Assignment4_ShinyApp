@@ -1,4 +1,7 @@
 library(shiny)
+library(tidyverse)
+
+tab1_data_df <- read.csv("data/processed/tab1_data.csv")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -18,14 +21,15 @@ ui <- fluidPage(
 
         # Show a plot of the generated distribution
         mainPanel(
-           plotOutput("distPlot")
+           plotOutput("distPlot"),
+           dataTableOutput("table")
         )
     )
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-
+    output$table <- renderDataTable(tab1_data_df %>% filter(Year == 2019))
     output$distPlot <- renderPlot({
         # generate bins based on input$bins from ui.R
         x    <- faithful[, 2]
