@@ -17,8 +17,8 @@ indicator_codes <- c("WSH_WATER_SAFELY_MANAGED",
                      "WSH_20_WAT",
                      "SDGWSHBOD",
                      "WHOSIS_000001",
-                     "SE.ENR.PRIM.FM.ZS",
                      "SE.SEC.UNER.LO.FE.ZS",
+                     "SE.SEC.UNER.LO.MA.ZS",
                      "WS_TIME_P",
                      "WS_PCDW_P",
                      "DV_EXPV_W")
@@ -29,42 +29,14 @@ indicator_names <- c("% Population using safely managed water",
                      "Diarrhoea disease attributable to inadequate water",
                      "Mortality rate attributed to unsafe water or sanitation",
                      "Life expectancy at birth",
-                     "Gender parity index, primary school enrollment",
                      "% female adolescent out of secondary school",
+                     "% male adolescent out of secondary school",
                      "Time to obtain water",
                      "Person to obtain water",
                      "% Women experience physical violence")
 
 # Create indicator dataframe with codes and names
 indicator_df <- data.frame(indicator_codes, indicator_names)
-
-############################
-# Countries used for this analysis
-countries_used <- c(
-  # Developed Economies (3)
-  "Germany", "Japan", "United States",
-  # Sub-Saharan Africa (4)
-  "Ethiopia", "Tanzania", "Sierra Leone", "Chad",
-  # Asia (4)
-  "India", "Bangladesh", "Nepal", "Cambodia",
-  # Latin America & MENA (4)
-  "Peru", "Guatemala", "Morocco", "Tunisia"
-)
-
-# Create country map
-regions_map <- c(
-  rep ("Developed Economies", times = 3),
-  rep ("Sub-Saharan Africa", times = 4),
-  rep ("Asia", times = 4),
-  rep ("Latam & MENA", times = 4)
-)
-
-# Find country codes
-country_codes_iso3c <- countrycode(countries_used, origin = "country.name", destination = "iso3c")
-country_codes_iso2c <- countrycode(countries_used, origin = "country.name", destination = "iso2c")
-
-# Create a country dictionary with country name, region name, and country codes
-countries_df <- data.frame(countries_used, regions_map, country_codes_iso2c, country_codes_iso3c)
 
 ############################
 # Data wrangling
@@ -88,7 +60,7 @@ for (i in 1:5){
     # Rename Dim1 to ResidenceArea and change it into a factor variable later
     # Add a few columns about the data, such as indicator name, source, and unit
     df_processed <- df_raw %>% 
-      filter(Country %in% country_codes_iso3c) %>% 
+      filter(SpatialDimType == "COUNTRY") %>% 
       select(Country, Year, Dim1, NumericValue) %>% 
       rename(
         Country_code = Country,
@@ -98,8 +70,12 @@ for (i in 1:5){
       mutate(
         IndicatorName = as.character(indicator_df[i,2]),
         Unit = "% of Population",
-        Source = "WHO"
-      )
+        Source = "WHO",
+        Region = countrycode(Country_code, origin = "iso3c", destination = "region"),
+        Country = countrycode(Country_code, origin = "iso3c", destination = "country.name")
+      ) %>% 
+      drop_na(Value)
+    
     
     df_processed$Residence_Area <- factor(df_processed$Residence_Area, 
                                           levels = c("RESIDENCEAREATYPE_TOTL",
@@ -112,7 +88,7 @@ for (i in 1:5){
     # Rename Dim1 to ResidenceArea and change it into a factor variable later
     # Add a few columns about the data, such as indicator name, source, and unit
     df_processed <- df_raw %>% 
-      filter(Country %in% country_codes_iso3c) %>% 
+      filter(SpatialDimType == "COUNTRY") %>% 
       select(Country, Year, Dim1, NumericValue) %>% 
       rename(
         Country_code = Country,
@@ -125,8 +101,11 @@ for (i in 1:5){
           IndicatorName == "Life expectancy at birth" ~ "Years", 
           IndicatorName == "Mortality rate attributed to unsafe water or sanitation" ~ "Per 100k Population",
           TRUE ~ "% of Population"),
-        Source = "WHO"
-      )
+        Source = "WHO",
+        Region = countrycode(Country_code, origin = "iso3c", destination = "region"),
+        Country = countrycode(Country_code, origin = "iso3c", destination = "country.name")
+      ) %>% 
+      drop_na(Value)
     
     df_processed$Gender <- factor(df_processed$Gender, 
                                   levels = c("SEX_BTSX",
@@ -134,10 +113,9 @@ for (i in 1:5){
                                              "SEX_FMLE"),
                                   labels = c("All", "Male", "Female"))
   }
-  # Add region info and country name
-  df_processed <- left_join(df_processed, countries_df, by = c("Country_code" = "country_codes_iso3c"))
+  
   # Drop the Country_code column
-  df_processed <- df_processed %>% select(-Country_code, -country_codes_iso2c)
+  df_processed <- df_processed %>% select(-Country_code)
   # Append df_processed to who_data
   who_data[[i]] = df_processed
 }
@@ -154,7 +132,7 @@ for (i in 6:7){
   # Rename Dim1 to ResidenceArea and change it into a factor variable later
   # Add a few columns about the data, such as indicator name, source, and unit
   df_processed <- df_raw %>% 
-    filter(iso3c %in% country_codes_iso3c) %>% 
+    filter(region != "Aggregates") %>% 
     select(iso3c, year, indicator_df[i,1]) %>% 
     rename(
       Country_code = iso3c,
@@ -163,15 +141,14 @@ for (i in 6:7){
     ) %>% 
     mutate(
       IndicatorName = indicator_df[i,2],
-      Unit = case_when(
-        IndicatorName == "% female children out of school (primary)" ~ "% of Population", 
-        TRUE ~ "Ratio (Girls to Boys)"),
-      Source = "World Bank"
+      Unit = "% of Population",
+      Source = "World Bank",
+      Region = countrycode(Country_code, origin = "iso3c", destination = "region"),
+      Country = countrycode(Country_code, origin = "iso3c", destination = "country.name")
     )
-  # Add region info and country name
-  df_processed <- left_join(df_processed, countries_df, by = c("Country_code" = "country_codes_iso3c"))
+  
   # Drop the Country_code column
-  df_processed <- df_processed %>% select(-Country_code, -country_codes_iso2c)
+  df_processed <- df_processed %>% select(-Country_code)
   # Append df_processed to wdi_data
   wdi_data[[i]] = df_processed
 }
@@ -188,7 +165,6 @@ for (i in 8:10){
   # Rename Dim1 to ResidenceArea and change it into a factor variable later
   # Add a few columns about the data, such as indicator name, source, and unit
   df_processed <- df_raw %>% 
-    filter(DHS_CountryCode %in% country_codes_iso2c) %>% 
     select(DHS_CountryCode, SurveyYear, Value, Indicator) %>% 
     rename(
       Country_code = DHS_CountryCode,
@@ -197,12 +173,13 @@ for (i in 8:10){
     mutate(
       IndicatorName = indicator_df[i,2],
       Unit = "% of Population",
-      Source = "DHS Program"
+      Source = "DHS Program",
+      Region = countrycode(Country_code, origin = "iso2c", destination = "region"),
+      Country = countrycode(Country_code, origin = "iso2c", destination = "country.name")
     )
-  # Add region info and country name
-  df_processed <- left_join(df_processed, countries_df, by = c("Country_code" = "country_codes_iso2c"))
+  
   # Drop the Country_code column
-  df_processed <- df_processed %>% select(-Country_code, -country_codes_iso3c)
+  df_processed <- df_processed %>% select(-Country_code)
   # Append df_processed to dhs_data
   dhs_data[[i]] = df_processed
 }
