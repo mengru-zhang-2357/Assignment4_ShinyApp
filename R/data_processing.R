@@ -18,7 +18,7 @@ indicator_codes <- c("WSH_WATER_SAFELY_MANAGED",
                      "SDGWSHBOD",
                      "WHOSIS_000001",
                      "SE.ENR.PRIM.FM.ZS",
-                     "SE.PRM.UNER.FE.ZS",
+                     "SE.SEC.UNER.LO.FE.ZS",
                      "WS_TIME_P",
                      "WS_PCDW_P",
                      "DV_EXPV_W")
@@ -30,7 +30,7 @@ indicator_names <- c("% Population using safely managed water",
                      "Mortality rate attributed to unsafe water or sanitation",
                      "Life expectancy at birth",
                      "Gender parity index, primary school enrollment",
-                     "% female children out of school (primary)",
+                     "% female adolescent out of secondary school",
                      "Time to obtain water",
                      "Person to obtain water",
                      "% Women experience physical violence")
@@ -44,7 +44,7 @@ countries_used <- c(
   # Developed Economies (3)
   "Germany", "Japan", "United States",
   # Sub-Saharan Africa (4)
-  "Ethiopia", "Tanzania", "Uganda", "Democratic Republic of the Congo",
+  "Ethiopia", "Tanzania", "Sierra Leone", "Chad",
   # Asia (4)
   "India", "Bangladesh", "Nepal", "Cambodia",
   # Latin America & MENA (4)
