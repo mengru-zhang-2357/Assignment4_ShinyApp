@@ -9,7 +9,9 @@ ui <- fluidPage(
       bg = "black",
       fg = "#FFC125",
       primary = "#DAA520",
-      bootswatch = "darkly"),
+      bootswatch = "darkly",
+      base_font = font_google("Roboto"),
+      heading_font = font_google("Roboto")),
     
     # Application title
     titlePanel("Clean Water and Public Health"),
@@ -82,6 +84,7 @@ server <- function(input, output) {
         time_obtain_water_merged %>% filter (Region == input$region) %>% 
           group_by(Country, Indicator) %>% 
           filter (Year == "Average") %>%
+          select (-regions_avg) %>% 
           pivot_wider(names_from = Indicator,
                       values_from = Value) %>% 
           rename(
