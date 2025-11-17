@@ -1,55 +1,97 @@
 library(shiny)
-library(tidyverse)
+library(bslib)
+library(rsconnect)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-
+    
+    theme = bs_theme(
+      bg = "black",
+      fg = "#FFC125",
+      primary = "#DAA520",
+      bootswatch = "darkly"),
+    
     # Application title
     titlePanel("Clean Water and Public Health"),
-
-    # Sidebar with a slider input for number of bins 
-    sidebarLayout(
+  
+    # FluidRow layout
+    fluidRow(
+      h3("Fetching water is a demanding task"),
+      sidebarLayout(
         sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
+          selectInput("region", 
+                      "Region",
+                      choices = c(unique(time_obtain_water$Region), "All"),
+                      selected = "All"
+          ),
+          selectInput("region", 
+                      "Region",
+                      choices = c("Average", "Most Recent"),
+                      selected = "Average"
+          )
         ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-           plotOutput("time_to_obtain_water_chart"),
-           dataTableOutput("time_to_obtain_water_table")
-           
+        mainPanel (
+          plotOutput("time_to_obtain_water_chart"),
+          dataTableOutput("time_to_obtain_water_table")
         )
+      )
     )
 )
+
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
     # Average time to fetch water chart
     output$time_to_obtain_water_chart <- renderPlot(
-      time_obtain_water_merged %>% group_by(Region, Indicator) %>% 
-      filter (Year == "Average") %>% 
-      summarize (regions_avg = mean(regions_avg)) %>% 
-      ggplot(aes(x = Region, y = regions_avg, fill = Indicator)) +
-      geom_col(position = "stack") 
+      if (input$region == "All"){
+        time_obtain_water_merged %>% group_by(Region, Indicator) %>% 
+          filter (Year == "Average") %>% 
+          summarize (regions_avg = mean(regions_avg)) %>% 
+          ggplot(aes(x = Region, y = regions_avg, fill = Indicator)) +
+          geom_col(position = "stack") +
+          labs(x = "Region", y = "% of Population",
+               title = "Distribution of Population by Time to Obtain Water") +
+          theme_bootswatch("solar")
+      } else {
+        time_obtain_water_merged %>% filter (Region == input$region) %>% 
+          group_by(Country, Indicator) %>% 
+          filter (Year == "Average") %>% 
+          ggplot(aes(x = Country, y = Value, fill = Indicator)) +
+          geom_col(position = "stack") +
+          labs(x = "Country", y = "% of Population",
+               title = "Distribution of Population by Time to Obtain Water") +
+          theme_bootswatch("solar")
+      }
     )
     
     # Data table to display
     output$time_to_obtain_water_table <- renderDataTable(
-      time_obtain_water_merged %>% group_by(Region, Indicator) %>% 
-      filter (Year == "Average") %>% 
-      summarize(regions_avg = mean(regions_avg)) %>%
-      pivot_wider(names_from = Indicator,
-                  values_from = regions_avg) %>% 
-      rename(
-        Missing_Info = "Population with unknown or missing information on round trip time to water",
-        Over_30_Min = "Population with water more than 30 minutes away round trip",
-        Less_than_30_Min = "Population with water 30 minutes or less away round trip",
-        On_Premise = "Population with water on the premises"
-      )
+      if (input$region == "All"){
+        time_obtain_water_merged %>% group_by(Region, Indicator) %>% 
+          filter (Year == "Average") %>%
+          summarize(regions_avg = mean(regions_avg)) %>%
+          pivot_wider(names_from = Indicator,
+                      values_from = regions_avg) %>% 
+          rename(
+            Missing_Info = "Population with unknown or missing information on round trip time to water",
+            Over_30_Min = "Population with water more than 30 minutes away round trip",
+            Less_than_30_Min = "Population with water 30 minutes or less away round trip",
+            On_Premise = "Population with water on the premises"
+            )
+      } else {
+        time_obtain_water_merged %>% filter (Region == input$region) %>% 
+          group_by(Country, Indicator) %>% 
+          filter (Year == "Average") %>%
+          pivot_wider(names_from = Indicator,
+                      values_from = Value) %>% 
+          rename(
+            Missing_Info = "Population with unknown or missing information on round trip time to water",
+            Over_30_Min = "Population with water more than 30 minutes away round trip",
+            Less_than_30_Min = "Population with water 30 minutes or less away round trip",
+            On_Premise = "Population with water on the premises"
+          )
+      }
+        
     )
     
     # By country shift over time
