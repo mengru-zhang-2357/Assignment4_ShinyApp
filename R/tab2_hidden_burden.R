@@ -20,6 +20,16 @@ time_obtain_water <- hidden_burden_df %>%
   filter(IndicatorName == "Time to obtain water") %>% 
   select(-X, -Residence_Area, -IndicatorName, -Unit, -Source) 
 
+time_obtain_water$Indicator <- factor(time_obtain_water$Indicator, 
+                                      labels = c("Missing Info",
+                                                 "More than 30 Minutes",
+                                                 "Less than 30 Minutes",
+                                                 "Water on Premise"),
+                                      levels = c("Population with unknown or missing information on round trip time to water",
+                                                 "Population with water more than 30 minutes away round trip",
+                                                 "Population with water 30 minutes or less away round trip",
+                                                 "Population with water on the premises"))
+
 person_obtain_water <- hidden_burden_df %>% 
   filter(IndicatorName == "Person to obtain water",
          Indicator != "Population with no drinking water on premises") %>% 
@@ -201,6 +211,31 @@ for (i in 1: length(list_C)){
 
 # Convert the list back to individual dataframes
 list2env(list_Merged_C, envir = .GlobalEnv)
+
+# To research the association between water access and school enrollment, we create joins between water access and enrollment data frames
+# Join basic water with female unenrollment data
+water_female_une <- female_une %>% 
+  left_join(basic_water, by = c("Year", "Country", "Region")) %>% 
+  rename (female_unenroll = Value.x,
+          access_to_basic_water = Value.y) %>% 
+  filter(Residence_Area == "Total")
+
+# Join basic water with male unenrollment data
+water_male_une <- male_une %>% 
+  left_join(basic_water, by = c("Year", "Country", "Region")) %>% 
+  rename (male_unenroll = Value.x,
+          access_to_basic_water = Value.y) %>% 
+  filter(Residence_Area == "Total")
+
+# Combine female and male unenrollment data
+unenrollment <- bind_rows(female_une %>% mutate(Gender = "Female"),
+                          male_une %>% mutate(Gender = "Male"))
+# Join basic water with unrollment data for both sex
+water_une <- unenrollment %>% 
+  left_join(basic_water, by = c("Year", "Country", "Region")) %>% 
+  rename (unenrollment = Value.x,
+          access_to_basic_water = Value.y) %>% 
+  filter(Residence_Area == "Total")
 
 
 
