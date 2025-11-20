@@ -16,18 +16,16 @@ ui <- navbarPage(
   
 )
 
-
-
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   hidden_burdenServer("tab2") 
   # By country shift over time
-  output$time_to_obtain_water_over_years <- renderPlot(
-    time_obtain_water %>% 
-    filter (Country == "Tanzania") %>% 
-    ggplot(aes(x = Year, y = Value, fill = Indicator)) + 
-    geom_col(position = "stack") 
-  )
+  # output$time_to_obtain_water_over_years <- renderPlot(
+  #   time_obtain_water %>% 
+  #   filter (Country == "Tanzania") %>% 
+  #   ggplot(aes(x = Year, y = Value, fill = Indicator)) + 
+  #   geom_col(position = "stack") 
+  # )
   
   
 }
