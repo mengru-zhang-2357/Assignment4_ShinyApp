@@ -29,12 +29,12 @@ hidden_burdenUI <- function(id, title){
           card(
             full_screen = TRUE,
             height = "420px",
-            card_header(h4("Fetching water is a demanding task...")),
+            card_header("Fetching water is a demanding task...",
+                        actionButton(NS(id, "modal_card_1"), "Show Data")),
             card_body(
               fill = TRUE,
               p("Distribution of Population by Time to Obtain Water"),
-              plotOutput(NS(id, "time_to_obtain_water_chart")),
-              DT::DTOutput(NS(id, "time_to_obtain_water_table"))
+              plotOutput(NS(id, "time_to_obtain_water_chart"))
               )
           ),
           card(
@@ -117,7 +117,19 @@ hidden_burdenServer <- function(id){
                       values_from = Value) %>% 
           mutate(across(where(is.numeric), round, 2))
       }
-    )
+    ) 
+    observe({ 
+      showModal( 
+        modalDialog( 
+          title = "Time to Obtain Water", 
+          easy_close = TRUE, 
+          size = "xl",
+          DT::DTOutput(NS(id, "time_to_obtain_water_table"))
+        ) 
+      ) 
+    }) %>%  
+      bindEvent(input$modal_card_1) 
+    
     
     # Card 2: Person to fetch water chart
     person_to_obtain_water_card2 <- reactive({
