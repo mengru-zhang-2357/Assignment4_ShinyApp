@@ -8,6 +8,8 @@ hidden_burdenUI <- function(id, title){
     title,
     page_sidebar(
       sidebar = sidebar(
+        p("The public health burden of water insecurity on women and girls is amplified because their traditional role as water collectors and household caregivers exposes them to injuries from carrying heavy loads, increased risk of waterborne infections due to poor hygiene and unsafe sources, and higher rates of gender-based violence while performing these essential, yet hazardous, duties."),
+        br(),
         selectInput(NS(id, "region"),
                     "Region",
                     choices = c(unique(time_obtain_water$Region), "All"),
@@ -23,7 +25,7 @@ hidden_burdenUI <- function(id, title){
         ),
         br(),
         selectInput (NS(id,"color"), "Choose a color palette",
-                    list ("PrettyCols::Autumn", "tvthemes::Alexandrite", "tvthemes::Aquamarine", "colorblindr::OkabeIto_black"),
+                    list ("PrettyCols::Autumn", "colorBlindness::Brown2Blue12Steps", "rcartocolor::Prism", "ggthemes::calc"),
                     selected = "PrettyCols::Autumn"),
         
       ),
@@ -70,7 +72,7 @@ hidden_burdenUI <- function(id, title){
           selectInput (NS(id,"color_var4"), "Choose color group variable",
                        list ("Region", "Country"),
                        selected = "Region"),
-          input_switch (NS(id,"reg_4"), "Show Regression Line"),
+          prettySwitch (NS(id,"reg_4"), "Show Regression Line"),
           br(),
           p("% of Women Who Have Experienced Physical Violence since 15"),
           plotlyOutput(NS(id, "women_violence_chart")),
