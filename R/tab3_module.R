@@ -1,5 +1,7 @@
-library(shiny)
+#library(shiny)
 library(ggthemes)
+library(maps)
+library(countrycode)
 
 # Load country list from world map
 world_map <- map_data("world") %>% 

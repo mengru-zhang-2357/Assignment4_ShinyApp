@@ -1,6 +1,3 @@
-library(shiny)
-library(ggthemes)
-
 # Set up the UI
 bibUI <- function(id, title){
   tabPanel(

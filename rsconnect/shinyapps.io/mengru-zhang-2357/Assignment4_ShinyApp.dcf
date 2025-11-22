@@ -1,12 +1,12 @@
-name: Water_Insecurity
-title: Water_Insecurity
+name: Assignment4_ShinyApp
+title: Assignment4_ShinyApp
 username: mengru-zhang-2357
 account: mengru-zhang-2357
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
-appId: 16119704
-bundleId: 11215813
-url: https://mengru-zhang-2357.shinyapps.io/Water_Insecurity/
+appId: 16145566
+bundleId: 11217792
+url: https://mengru-zhang-2357.shinyapps.io/Assignment4_ShinyApp/
 version: 1
 asMultiple: FALSE
 asStatic: FALSE
