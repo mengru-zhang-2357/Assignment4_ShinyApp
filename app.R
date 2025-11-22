@@ -8,7 +8,7 @@ library(thematic)
 ui <- navbarPage(
   title = "Water Insecurity and Public Health",
     
-  theme = bs_theme(bootswatch = "sandstone"),
+  theme = bs_theme(bootswatch = "yeti"),
   
   header = tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "style.css")),
 
