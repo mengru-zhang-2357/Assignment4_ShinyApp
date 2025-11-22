@@ -6,27 +6,23 @@ library(thematic)
 
 # Define UI for application that draws a histogram
 ui <- navbarPage(
-  title = "Water Insecurity and Public Health",
+    title = "Water Insecurity and Public Health",
+      
+    theme = bs_theme(bootswatch = "sandstone"),
     
-  theme = bs_theme(bootswatch = "sandstone"),
+    header = tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "style.css")),
   
-  header = tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "style.css")),
-
-  hidden_burdenUI("tab2", "Hidden Burden")
-  
+    hidden_burdenUI("tab2", "Hidden Burden"),
+    
+    explore_countryUI("tab3", "Explore Country Data")
 )
 
 # Define server logic required to draw a histogram
-server <- function(input, output) {
-  hidden_burdenServer("tab2") 
-  # By country shift over time
-  # output$time_to_obtain_water_over_years <- renderPlot(
-  #   time_obtain_water %>% 
-  #   filter (Country == "Tanzania") %>% 
-  #   ggplot(aes(x = Year, y = Value, fill = Indicator)) + 
-  #   geom_col(position = "stack") 
-  # )
+server <- function(input, output, session) {
   
+  hidden_burdenServer("tab2") 
+  
+  explore_countryServer("tab3")
   
 }
 
