@@ -14,7 +14,9 @@ ui <- navbarPage(
   
     hidden_burdenUI("tab2", "Hidden Burden"),
     
-    explore_countryUI("tab3", "Explore Country Data")
+    explore_countryUI("tab3", "Explore Country Data"),
+    
+    bibUI("tab4", "Bibliography")
 )
 
 # Define server logic required to draw a histogram
@@ -23,6 +25,8 @@ server <- function(input, output, session) {
   hidden_burdenServer("tab2") 
   
   explore_countryServer("tab3")
+  
+  bibServer("tab4")
   
 }
 
