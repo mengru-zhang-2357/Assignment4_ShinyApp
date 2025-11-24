@@ -3,10 +3,12 @@ In this project, team members worked together using R and Github to develop a Sh
 
 ## Repository Contents
 - `README.md` - Documentation and collaboration details 
-- `TextMessages.csv` - Sample dataset for analysis  
-- `Assignment3.R` - Code for analysis including visualization and summary statistics
-- `Assignment3.Rmd` - R Markdown file to generate reproducible report
-- `Group7_Assignment3_Final_Report.pdf` - Combined visualizations and summary statistics report
+- `data/` - Raw and processed data
+- `R/` - R codes for modules  
+- `app.R` - Code for analysis including visualization and summary statistics
+- `Helpers/` - Data download and processing codes
+- `www/` - style CSS file
+- `rsconnect/` - shinyapps.io deployment
 
 ## Description of Data
 -	**WHO Global Health Observatory:** Includes indicators on access to basic and safely managed drinking water, mortality from unsafe water and poor sanitation, diarrheal disease burden, and life expectancy.
@@ -45,9 +47,9 @@ Each tab in the app includes user inputs that filter, animate, and customize the
 -	Year Range: A range slider to set the period for exploration, used instead of a single-year slider due to uneven data availability.
 -	Color Palette: A selectInput that allows users to change the color scheme of all plots on this tab.
 -	Additional panel-specific inputs include:
---	Show Data: A button that opens a modal displaying the data table behind the selected chart.
---	Color Group Variable: Lets users color scatter plots by region or country.
---	Show Regression Line: A toggle switch that overlays a linear regression line on scatter plots when enabled.
+   -	Show Data: A button that opens a modal displaying the data table behind the selected chart.
+   -	Color Group Variable: Lets users color scatter plots by region or country.
+   -	Show Regression Line: A toggle switch that overlays a linear regression line on scatter plots when enabled.
 ### Explore Country Data Tab
 -	Select a Country: A selectInput for choosing a country to view its historical water access and related indicators. Changing the selection triggers a modal with plots and data tables.
 -	Clickable Map: An interactive leaflet map where clicking a country automatically updates the country selection and opens the same modal.
@@ -66,9 +68,9 @@ Each tab produces dynamic visualizations and data tables that respond to user se
 -	Each chart includes a corresponding modal data table, accessible via the “Show Data” button.
 ### Explore Country Data Tab
 -	Country Profile Charts: When a country is selected or clicked on the map, a modal displays:
---	Line chart of water access over time.
---	Stacked bar chart of time to obtain water.
---	Summary table of key indicators (water access, disease burden, life expectancy).
+   -	Line chart of water access over time.
+   -	Stacked bar chart of time to obtain water.
+   -	Summary table of key indicators (water access, disease burden, life expectancy).
 
 All outputs are rendered using ggplot2, plotly, and DT, enabling zoom, hover, and filtering capabilities for intuitive exploration.
 
