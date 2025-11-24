@@ -53,7 +53,7 @@ hidden_burdenUI <- function(id, title){
         ),
         accordion_panel(
           value = "school",
-          title = "This leads to more female children out of school...",
+          title = "This leads to more girls out of school...",
           icon = bsicons::bs_icon("droplet-half"),
           p(em("\"A standard deviation increase in water insecurity resulted in 0.30 more missed school days in the last week.\"")),
           p(style = "text-align: right;", "-- Cooper-Vince et al., 2017"),
@@ -103,18 +103,32 @@ hidden_burdenServer <- function(id){
 
     output$time_to_obtain_water_chart <- renderPlotly({
       x <- if (input$region == "All") "Region" else "Country"
-      base <- ggplot(time_to_obtain_water_card1(), aes(x = .data[[x]],
-                                             y = Value,
-                                             fill = Indicator)) +
-        geom_bar(stat = "summary", fun = "mean", position = "stack") +
-        labs(y = "% of Population") +
+      data_summary <- time_to_obtain_water_card1() %>% 
+        mutate(xvar = .data[[x]]) %>% 
+        group_by(xvar, Indicator) %>% 
+        summarize(Value = mean(Value, na.rm = TRUE)) %>% 
+        ungroup() %>% 
+        mutate (text = paste0(
+          "Region / Country: ", xvar, "<br>",
+          "Time to Obtain Water: ", Indicator, "<br>",
+          "% Population: ", round(Value, 1)
+          ))
+      
+      base <- ggplot(data_summary, aes(x = xvar,
+                                       y = Value,
+                                       fill = Indicator, 
+                                       text = text)) +
+        geom_col(position = "stack") +
+        labs(y = "% of Population",
+             x = x) +
         scale_fill_paletteer_d(input$color) +
         theme_classic() +
         theme(text = element_text(size = 10, family = "Roboto"),
-              axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+              axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 8),
+              axis.text.y = element_text(size = 12),
               legend.title = element_blank(),
               legend.position = "top") 
-      ggplotly(base)
+      ggplotly(base, tooltip = "text")
     })
 
     # Data table to display
@@ -155,16 +169,26 @@ hidden_burdenServer <- function(id){
     })
 
     output$person_to_obtain_water_chart <- renderPlotly({
-      base <- ggplot(person_to_obtain_water_card2(), aes(x = Value,
-                                                 y = Indicator,
-                                                 fill = Indicator)) +
-        geom_bar(stat = "summary", fun = "mean") +
+      data_summary <- person_to_obtain_water_card2() %>% 
+        group_by(Indicator) %>% 
+        summarize(Value = mean(Value, na.rm = TRUE)) %>% 
+        ungroup() %>% 
+        mutate (text = paste0("Person to Obtain Water: ", Indicator, "<br>",
+                              "% Population: ", round(Value, 1)))
+      
+      base <- ggplot(data_summary, aes(x = Value,
+                                       y = Indicator,
+                                       fill = Indicator,
+                                       text = text)) +
+        geom_col() +
         scale_fill_paletteer_d(input$color) +
         labs (x = "% Population") +
         theme_classic() +
-        theme(text = element_text(size = 10, family = "Roboto"),
+        theme(text = element_text(size = 12, family = "Roboto"),
+              axis.text.y = element_text(size = 12),
+              axis.text.x = element_text(size = 12),
               axis.title.y = element_blank())
-      ggplotly(base)
+      ggplotly(base, tooltip = "text")
     })
 
     # Data table to display
@@ -203,17 +227,24 @@ hidden_burdenServer <- function(id){
     })
 
     output$water_school_inequality_chart <- renderPlotly({
-      base <- ggplot(water_school_inequality_card3(),
-             aes(x = water_bin, y = unenrollment, color = Gender, group = Gender)
-             ) +
-        stat_summary(fun = mean, geom = "line", linewidth = 1, na.rm = TRUE) +
-        stat_summary(fun = mean, geom = "point", size = 2, na.rm = TRUE) +
+      data_summary <- water_school_inequality_card3() %>% 
+        group_by(water_bin, Gender) %>% 
+        summarize(unenrollment = mean(unenrollment, na.rm = TRUE)) %>% 
+        ungroup() %>% 
+        mutate (text = paste0("% Population with Basic Water Access: ", water_bin, "<br>",
+                              "% Adolescent out of Secondary School: ", round(unenrollment, 1)))
+      
+      base <- ggplot(data_summary,aes(x = water_bin, y = unenrollment, color = Gender, group = Gender, text = text)) +
+        geom_line(linewidth = 1) +
+        geom_point(size = 2) +
         labs(x = "% Population with Access to Basic Water", y = "Unenrollment (%)") +
         scale_color_paletteer_d(input$color) +
         theme_classic() +
         theme(text = element_text(size = 10, family = "Roboto"),
+              axis.text.y = element_text(size = 10),
+              axis.text.x = element_text(size = 10),
               legend.position = "top")
-      ggplotly(base)
+      ggplotly(base, tooltip = "text")
     })
 
     # Data table to display
@@ -250,18 +281,22 @@ hidden_burdenServer <- function(id){
     })
 
     output$women_violence_chart <- renderPlotly({
-      base <- ggplot(water_violence_card4(), aes(x = access_to_basic_water, y = pct_violence, color = .data[[input$color_var4]])) +
+      base <- ggplot(water_violence_card4(), aes(x = access_to_basic_water, y = pct_violence, color = .data[[input$color_var4]],
+                                                 text = paste0("% Population with Basic Water Access: ", access_to_basic_water, "<br>",
+                                                               "% Women who Have Experienced Physical Violence since 15: ", round(pct_violence,1)))) +
         geom_point(size = 3) +
         labs(x = "% of Population with Access to Basic Water", y = "% of Women Who Have Experience Violence") +
         scale_color_paletteer_d(input$color) +
         theme_classic() +
         theme(text = element_text(size = 10, family = "Roboto"),
+              axis.text.y = element_text(size = 10),
+              axis.text.x = element_text(size = 10),
               legend.position = "top")
       if (input$reg_4){
         base <- base + geom_smooth(aes(group = 1),
                                    method = "lm", se = TRUE)
       }
-      ggplotly(base) 
+      ggplotly(base, tooltip = "text") 
     })
 
     # Data table to display

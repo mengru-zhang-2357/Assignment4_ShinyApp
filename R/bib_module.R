@@ -2,6 +2,11 @@
 bibUI <- function(id, title){
   tabPanel(
     title,
+    
+    h3("Bibliography"),
+    
+    br(),
+    
     p("Choudhary, N., Brewis, A., Wutich, A., & Udas, P. B. (2020). Sub-optimal household water access is associated with greater risk of intimate partner violence against women: evidence from Nepal. Journal of Water and Health, 18(4), 579–594. https://doi.org/10.2166/wh.2020.024"),
     
     br(),
@@ -18,7 +23,17 @@ bibUI <- function(id, title){
     
     br(),
     
-    p("World Health Organization, & United Nations Children’s Fund (Eds.). (2025). Progress on household drinking-water, sanitation and hygiene 2000-2024: Special focus on inequalities. United Nations Children’s Fund (UNICEF) and World Health Organization. Licence: CC BY-NC-SA 3.0 IGO. https://www.who.int/publications/m/item/progress-on-household-drinking-water--sanitation-and-hygiene-2000-2024--special-focus-on-inequalities")
+    p("World Health Organization, & United Nations Children’s Fund (Eds.). (2025). Progress on household drinking-water, sanitation and hygiene 2000-2024: Special focus on inequalities. United Nations Children’s Fund (UNICEF) and World Health Organization. Licence: CC BY-NC-SA 3.0 IGO. https://www.who.int/publications/m/item/progress-on-household-drinking-water--sanitation-and-hygiene-2000-2024--special-focus-on-inequalities"),
+    
+    br(),
+    
+    h3("Data Sources"),
+    
+    p(HTML("<a href='https://www.who.int/data/gho' target='_blank' style='color: #1e88e5;'>WHO Global Health Observatory</a>")),
+    
+    p(HTML("<a href='https://databank.worldbank.org/' target='_blank' style='color: #1e88e5;'>World Bank DataBank</a>")),
+    
+    p(HTML("<a href='https://dhsprogram.com/data/Guide-to-DHS-Statistics/index.htm#t=Guide_to_DHS_Statistics_DHS-8.htm' target='_blank' style='color: #1e88e5;'>The Demographic and Health Surveys (DHS) Program</a>"))
   )
 }
 

@@ -11,7 +11,9 @@ ui <- navbarPage(
     theme = bs_theme(bootswatch = "sandstone"),
     
     header = tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "style.css")),
-  
+    
+    health_impactUI("tab1", "Health Impact"),
+    
     hidden_burdenUI("tab2", "Hidden Burden"),
     
     explore_countryUI("tab3", "Explore Country Data"),
@@ -21,6 +23,8 @@ ui <- navbarPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
+  
+  health_impactServer("tab1")
   
   hidden_burdenServer("tab2") 
   
