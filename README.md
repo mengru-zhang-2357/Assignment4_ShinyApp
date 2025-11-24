@@ -35,12 +35,12 @@ library(ggthemes)    # for plot themes
 ```
 
 ## Key Features and User Interaction
-# Description of Inputs
+### Description of Inputs
 Each tab in the app includes user inputs that filter, animate, and customize the visualizations.
-# Health Impact Tab
+### Health Impact Tab
 -	Water Access Indicator: A selectInput that lets users choose between basic and safely managed drinking water.
 -	Year: A slider that allows users to select a specific year. An animation button automatically cycles through years, dynamically updating both the world map and the correlation plot.
-# Hidden Burden Tab
+### Hidden Burden Tab
 -	Region: A selectInput to select a region or view all regions. When “All” is selected, the x-axis displays regions; otherwise, it shows countries within the chosen region.
 -	Year Range: A range slider to set the period for exploration, used instead of a single-year slider due to uneven data availability.
 -	Color Palette: A selectInput that allows users to change the color scheme of all plots on this tab.
@@ -48,23 +48,23 @@ Each tab in the app includes user inputs that filter, animate, and customize the
 --	Show Data: A button that opens a modal displaying the data table behind the selected chart.
 --	Color Group Variable: Lets users color scatter plots by region or country.
 --	Show Regression Line: A toggle switch that overlays a linear regression line on scatter plots when enabled.
-# Explore Country Data Tab
+### Explore Country Data Tab
 -	Select a Country: A selectInput for choosing a country to view its historical water access and related indicators. Changing the selection triggers a modal with plots and data tables.
 -	Clickable Map: An interactive leaflet map where clicking a country automatically updates the country selection and opens the same modal.
 
-# Description of outputs
+### Description of outputs
 Each tab produces dynamic visualizations and data tables that respond to user selections in real time.
-# Health Impact Tab
+### Health Impact Tab
 -	Global Water Access Map: A leaflet output showing the percentage of the population with basic or safely managed water, colored by value and annotated with tooltips.
 -	Correlation Plot: A scatter plot comparing water access and life expectancy, optionally including a regression line.
 -	Trend Over Time: A time-series plot illustrating global progress in water access since 2000.
-# Hidden Burden Tab
+### Hidden Burden Tab
 -	Time to Obtain Water: A stacked bar chart displaying the share of the population with onsite, <30-minute, or >30-minute access.
 -	Person Responsible for Water Collection: A grouped bar chart comparing gender and age categories among water collectors.
 -	Education Impact: A line chart showing gender disparities in secondary school enrollment in relation to water access.
 -	Violence and Water Access: A scatter plot examining the relationship between women’s experience of physical violence and access to basic water.
 -	Each chart includes a corresponding modal data table, accessible via the “Show Data” button.
-# Explore Country Data Tab
+### Explore Country Data Tab
 -	Country Profile Charts: When a country is selected or clicked on the map, a modal displays:
 --	Line chart of water access over time.
 --	Stacked bar chart of time to obtain water.
@@ -74,15 +74,15 @@ All outputs are rendered using ggplot2, plotly, and DT, enabling zoom, hover, an
 
 ## Server Logic
 The server logic connects user inputs with the underlying datasets and reactive visualizations. 
-# Health Impact Tab
+### Health Impact Tab
 -	Data Preparation: Reactive expressions filter and merge WHO indicators based on user-selected year and water access type.
 -	Scatter and Line Charts: renderPlot functions generate ggplot visualizations that automatically adjust to the selected year. If no overlapping data exists, a message “No data available for this year” appears instead of a blank plot.
 -	Map Rendering: The leaflet output dynamically updates when inputs change, recoloring polygons and refreshing legends accordingly.
-# Hidden Burden Tab
+### Hidden Burden Tab
 -	Reactive Filtering: Each panel filters DHS or World Bank data by region and year range, precomputing mean values for aggregation.
 -	Plot Creation: Charts are built using ggplot2 and converted to interactive format via ggplotly(). 
 -	Modal Tables: renderDT creates detailed data tables that appear only when users click “Show Data.” Observers track these clicks and trigger the modal display.
-# Explore Country Data Tab
+### Explore Country Data Tab
 -	Map Interaction: A leaflet map displays countries with clickable polygons linked to country ISO codes and names. When clicked, an observer updates the selected country input.
 -	Modal Generation: Observers open a modal containing three outputs, two charts and one table, filtered by the selected country.
 
