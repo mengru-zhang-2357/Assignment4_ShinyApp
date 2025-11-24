@@ -86,34 +86,39 @@ max_year <- ifelse(length(available_years) > 0, max(available_years), 2020)
 health_impactUI <- function(id, title){
   tabPanel(
     # --- Tab 1: World Map, Scatter Plot, and Trend Line ---
-    title = "Health Impact",
+    title,
+    
+    # Set up the sidebar layout
     page_sidebar(
        sidebar = sidebar(
-          p("Water insecurity reduces life expectancy as the lack of safe and reliable water increases disease, malnutrition, and poor sanitation, leading to higher mortality and weakened overall health."),
-          
-          # 1. Indicator Selection (Affects BOTH map and scatter plot)
-          selectInput(NS(id,"selected_indicator"),
-                      "Select Water Access Indicator:",
-                      choices = c("Basic Water Access", "Safely Managed Drinking Water"),
-                      selected = "Basic Water Access"
-          ),
-          
-          # 2. Slider for year selection (Affects map and scatter plot)
-          sliderInput(NS(id,"selected_year"),
-                      "Select Year:",
-                      min = min_year,
-                      max = max_year,
-                      value = (max_year + min_year) / 2,
-                      step = 1,
-                      sep = "",
-                      animate = animationOptions(interval = 1000, loop = FALSE)
-          ),
-          
-          # Footer information
-          p(HTML("<hr>Water Access Data: WHO/UNICEF Joint Monitoring Programme (JMP). Filtered for total (TOTL) population estimates.")),
-          p(HTML("Data Source: <a href='https://www.who.int/data/gho/indicator-metadata-registry/mreg-details/136' target='_blank' style='color: #1e88e5;'>WHO/UNICEF JMP</a>")),
+        # Overview of the tab - summary of the impact of water insecurity on health
+        p("Water insecurity reduces life expectancy as the lack of safe and reliable water increases disease, malnutrition, and poor sanitation, leading to higher mortality and weakened overall health."),
+        br(),
+        
+        # 1. Indicator Selection (Affects BOTH map and scatter plot)
+        selectInput(NS(id,"selected_indicator"),
+                    "Select Water Access Indicator:",
+                    choices = c("Basic Water Access", "Safely Managed Drinking Water"),
+                    selected = "Basic Water Access"
+        ),
+        br(),
+        
+        # 2. Slider for year selection (Affects map and scatter plot)
+        sliderInput(NS(id,"selected_year"),
+                    "Select Year:",
+                    min = min_year,
+                    max = max_year,
+                    value = (max_year + min_year) / 2,
+                    step = 1,
+                    sep = "",
+                    animate = animationOptions(interval = 1000, loop = FALSE)
+        ),
+        br(),
+        
+        # Footer information
+        p(HTML("<hr>Water Access Data: WHO/UNICEF Joint Monitoring Programme (JMP). Filtered for total (TOTL) population estimates.")),
+        p(HTML("Data Source: <a href='https://www.who.int/data/gho/indicator-metadata-registry/mreg-details/136' target='_blank' style='color: #1e88e5;'>WHO/UNICEF JMP</a>")),
        ),
-       
        
        # Output 1: Leaflet map
        h4("Global Water Access Distribution"),
@@ -139,8 +144,12 @@ health_impactUI <- function(id, title){
 health_impactServer <- function(id){
   moduleServer(id, function(input, output, session) {
     
+    # Apply app theme to the outputs
     thematic::thematic_shiny()
-    # 1 Dynamic Title for the scatter plot
+    
+    # 1. Data preparation for outputs
+    
+    # Dynamic Title for the scatter plot
     output$scatter_plot_title <- renderUI({
       h4(paste("Correlation:", input$selected_indicator, "vs. Life Expectancy"))
     })
@@ -160,11 +169,9 @@ health_impactServer <- function(id){
         filter(Year == input$selected_year) %>%
         select(iso_a3, LifeExpectancy)
       
-      # Merge the data
+      # Merge the data with map data
       merged_data <- water_subset %>%
-        inner_join(life_expectancy_subset, by = "iso_a3") 
-      
-      merged_data <- merged_data %>% 
+        inner_join(life_expectancy_subset, by = "iso_a3") %>% 
         left_join(world_map %>% st_drop_geometry() %>% select(iso_a3, name), by = "iso_a3") %>%
         mutate(CountryName = ifelse(is.na(name), iso_a3, name)) %>%
         select(-name)
@@ -297,7 +304,7 @@ health_impactServer <- function(id){
         "<strong>%s</strong><br/>%s: %s",
         map_data$name, 
         indicator_label,
-        ifelse(is.na(map_data$PercentWaterAccess), "No Data", paste0(round(map_data$PercentWaterAccess, 1), "%%"))
+        ifelse(is.na(map_data$PercentWaterAccess), "No Data", paste0(round(map_data$PercentWaterAccess, 1), "%"))
       ) %>% lapply(htmltools::HTML)
       
       # Update the map polygons

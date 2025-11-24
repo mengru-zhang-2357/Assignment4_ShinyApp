@@ -1,3 +1,4 @@
+# This is the Bibliography page listing out the data and literature used in this app.
 # Set up the UI
 bibUI <- function(id, title){
   tabPanel(

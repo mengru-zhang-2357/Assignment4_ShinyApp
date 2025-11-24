@@ -2,37 +2,51 @@
 library(ggthemes)
 library(maps)
 library(countrycode)
+library(tidyverse)
 
+# --- Data Loading and Initial Preparation ---
 # Load country list from world map
 world_map_tab3 <- rnaturalearth::ne_countries(scale = "small", returnclass = "sf") %>% # Get the base world map data (an sf object with country boundaries)
   dplyr::select(iso_a3, name, geometry)
 
-# Merge with % population with safely managed water
+# 1. Merge with % population with basic water access (data used in Tab 1, so it's not loaded again here for efficiency)
+# Add country names using the ISO codes
 safe_water_total <- water_basic_cleaned %>%  
-  mutate(Country = countrycode(iso_a3, origin = 'iso3c', destination = 'country.name'))
-
+  mutate(Country = countrycode(iso_a3, origin = 'iso3c', destination = 'country.name'))   
+# Filter out the latest data for each country, used in the world map
 safe_water_latest <- safe_water_total %>% group_by(Country) %>% 
   filter(Year == max(Year)) %>% 
   ungroup()
-
+# Merge the filtered water access data with world map
 countries_water <- world_map_tab3 %>% 
   left_join(safe_water_latest, by = "iso_a3") %>%
   st_as_sf() # Convert back to sf object after join
 
-# Set up the UI
+# 2. Load additional Tab 1 data, such as mortality from unsafe water and poor sanitation
+country_data_df <- read.csv("data/processed/tab1_data.csv")
+
+
+# --- UI Definition ---
 explore_countryUI <- function(id, title){
   tabPanel(
+    # --- Tab 3: Explore country level data ---
     title,
+    # The UI is made up of a clickable world map and a floating country selector
+    # Define the world map dimension
     div(class = "plot-container", leafletOutput(NS(id,"water_access_map"), height = 900)),
+    
+    # Define the floating panel
     absolutePanel(
       wellPanel(
         selectInput(NS(id, "country_selected"),
         "Select a country to view data",
-        choices = c(sort(unique(safe_water_total$Country))),
+        choices = c(sort(unique(safe_water_total$Country))),     # The available choices are based on basic water access data
         selected = "Tanzania"
         )
       ),
-      width = "300px", 
+      
+      # Define the size and location of the panel
+      width = "300px",                                           
       left = "50px", 
       top = "75px", 
       draggable = TRUE,
@@ -40,15 +54,18 @@ explore_countryUI <- function(id, title){
   )
 }
 
+
+# --- Server Logic ---
 explore_countryServer <- function(id){
   moduleServer(id, function(input, output, session){
+    
+    # Apply app theme to the outputs
     thematic::thematic_shiny()
     
-    # Color palette & constants
+    # 1. Create the leaflet map
+    # Color palette & constants for the map
     pal_map <- colorNumeric(palette = "YlGnBu", domain = c(0, 100))
     na_color <- "#CCCCCC"
-    
-    
     
     # Create the base map initially
     output$water_access_map <- renderLeaflet({
@@ -58,13 +75,18 @@ explore_countryServer <- function(id){
         "<strong>%s</strong><br/>%s: %s",
         countries_water$name, 
         "% Population with Basic Water Access",
-        ifelse(is.na(countries_water$PercentWaterAccess), "No Data", paste0(round(countries_water$PercentWaterAccess, 1), "%%"))
+        ifelse(is.na(countries_water$PercentWaterAccess), "No Data", paste0(round(countries_water$PercentWaterAccess, 1), "%"))
       ) %>% lapply(htmltools::HTML)
       
+      # Draw the map - the map is static, but clickable
       leaflet(countries_water) %>%
         setView(lng = 0, lat = 30, zoom = 2) %>% # Center the map
         addProviderTiles(providers$CartoDB.Positron) %>% # Clean, simple base map
-        addPolygons(
+        
+        # Add the polygon borders for each country: define the weight and color of the border, when hovered over, the border becomes solid orange
+        # Also add layerId which will allow clicking later
+        # Also define the font and style of the label / tooltip
+        addPolygons(                                     
           fillColor = ~ifelse(is.na(PercentWaterAccess), na_color, pal_map(PercentWaterAccess)),
           weight = 1,
           opacity = 1,
@@ -77,7 +99,7 @@ explore_countryServer <- function(id){
             dashArray = "",
             fillOpacity = 1,
             bringToFront = TRUE),
-          layerId = ~iso_a3,           # <-- enables click -> country name
+          layerId = ~iso_a3,           # Enables click by country ISO code
           label = labels,
           labelOptions = labelOptions(
             style = list("font-weight" = "bold", padding = "5px 10px"),
@@ -86,13 +108,16 @@ explore_countryServer <- function(id){
         ) %>%
         
         # Add legend for the percentage scale
-        addLegend(pal = pal_map, values = c(0, 100), opacity = 0.7, title = paste0("% Population with Basic Water"),
+        addLegend(pal = pal_map, values = c(0, 100), opacity = 0.7, title = paste0("% Population with Basic Water Access"),
                   position = "bottomright") %>%
         
         # Add a custom legend entry for 'No Data'
         addLegend(colors = na_color, labels = "No Data", opacity = 0.7, 
                   position = "bottomright", title = "")
     })
+    
+    # 2. If a country is selected, update the country selected
+    # This offers the user two ways to explore the data - select a country on the map, or from the dropdown menu in the floating panel
     
     # Observer to update country selected
     observe({
@@ -103,6 +128,7 @@ explore_countryServer <- function(id){
         if (is.null(click$id))
           return()
         
+        # Convert the click ID (ISO code) to country name
         country_name <- countrycode(sourcevar = click$id, origin = "iso3c", destination = "country.name")
         
         # Update the selectInput's selected value to match the country clicked
@@ -112,32 +138,43 @@ explore_countryServer <- function(id){
       bindEvent(input$water_access_map_shape_click)
     
     
-    # Observer to open modal
+    # If input$country_selected is changed, use observer to open modal
     observe({
       showModal(
         modalDialog(
+          # Define the title of the modal based on the country selected
           title = paste0("Reviewing: Data from ", input$country_selected),
+          
+          # Create a scrollable modal, with two charts and one data table
           div(
             style = "max-height = 500px; overflow-y: auto; padding: 15px;",
+            
+            # Country level water access data time series
             h4("% Population with Basic Water"),
             plotlyOutput(session$ns("water_access_over_years")),
             br(),
             
+            # Country level time to obtain water data time series
             h4("Time to Obtain Water"),
             plotlyOutput(session$ns("time_to_obtain_water_over_years")),
             br(),
             
+            # Key country level public health data related to water access
             h4("Key Public Health Statistics from 2019"),
-            DT::DTOutput(session$ns("countrydata"))
+            DT::DTOutput(session$ns("countrydata")),
+            p("Note: 2019 is the only year for which WHO disease burden data are available.")
           ),
-          easy_close = TRUE,
-          size = "xl"
+          easy_close = TRUE,   # Dismiss button at bottom
+          size = "xl"          # Define a big modal
         )
       )
     }) %>%
-      bindEvent(input$country_selected, ignoreInit = TRUE)
+      bindEvent(input$country_selected, ignoreInit = TRUE)  #ignoreInit so when the app first launches, there's no modal floating
     
+    ###### Create the plots and table for the modal
     # Chart 1: By country % basic water access over time
+    # Filters the water access data to the country selected, then plot a line chart over time
+    # Define tooltip text for Plotly in aes()
     output$water_access_over_years <- renderPlotly({
       req(input$country_selected)
       base <- safe_water_total %>%
@@ -157,6 +194,9 @@ explore_countryServer <- function(id){
     })
     
     # Chart 2: By country time to obtain water shift over time
+    # Filters the time to collect water data (loaded in Tab 2) to the country selected, then plot a stacked bar chart over time
+    # If there's no data available, return "No data available".
+    # Define tooltip text for Plotly in aes()
     output$time_to_obtain_water_over_years <- renderPlotly({
       req(input$country_selected)
       base <- time_obtain_water %>%
@@ -176,20 +216,21 @@ explore_countryServer <- function(id){
         ggplot(aes(x = factor(Year), y = Percent_Population, fill = Indicator,
                    text = paste0("Year: ", as.integer(Year), "<br>",
                                  "Time to Obtain Water: ", Indicator, "<br>",
-                                 "% Population: ", round(Percent_Population,1)) )) +
-        geom_col(position = "stack") +
-        labs(x = "Year", y = "% Population") +
-        theme_classic() +
-        theme(text = element_text(size = 10, family = "Roboto"),
-              axis.text.x = element_text(size = 10),
-              axis.text.y = element_text(size = 10),
-              legend.title = element_blank(),
-              legend.position = "top") 
+                                 "% Population: ", round(Percent_Population, 1)) )) +
+          geom_col(position = "stack") +
+          labs(x = "Year", y = "% Population") +
+          theme_classic() +
+          theme(text = element_text(size = 10, family = "Roboto"),
+                axis.text.x = element_text(size = 10),
+                axis.text.y = element_text(size = 10),
+                legend.title = element_blank(),
+                legend.position = "top") 
       ggplotly(base, tooltip = "text") 
     })
   
   
     # DataTable 3: By country % access to basic water, diarrhoea disease attributable to unsafe water, and mortality rate due to unsafe water
+    # Filters the country level big data frame to show public health data from 2019
     output$countrydata <- DT::renderDT({
       req(input$country_selected)
       base <- country_data_df %>%
