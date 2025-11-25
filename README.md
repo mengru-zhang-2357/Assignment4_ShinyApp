@@ -1,13 +1,13 @@
 # Assignment 4: Shiny App - Water Insecurity
-In this project, team members worked together using R and Github to develop a Shiny App which explores the intersection between water insecurity and public health, focusing on two themes: (1) the health impact of limited access to safe drinking water, and (2) the hidden gender burden, as women and girls often bear the responsibility for water collection. 
+In this project, team members worked together using R and Github to develop a Shiny App which explores the intersection between water insecurity and public health, focusing on two themes: (1) health impacts of limited access to safe drinking water, and (2) the hidden gender burden, as women and girls often bear the responsibility for water collection. 
 
 ## Repository Contents
 - `README.md` - Documentation and collaboration details 
 - `data/` - Raw and processed data
-- `R/` - R codes for modules  
+- `R/` - R scripts for modules  
 - `app.R` - Code for analysis including visualization and summary statistics
 - `Helpers/` - Data download and processing codes
-- `www/` - style CSS file
+- `www/` - CSS stylesheet for app styling
 - `rsconnect/` - shinyapps.io deployment
 
 ## Description of Data
@@ -16,7 +16,7 @@ In this project, team members worked together using R and Github to develop a Sh
 -	**Demographic and Health Surveys (DHS) Program:** Contains household-level data on time to obtain drinking water, the primary person responsible for water collection, and women’s experiences of physical violence.
 
 ## Setup and Required Packages
-To reproduce the analysis, install and load the following R package:
+To reproduce the analysis, install and load the following R packages:
 
 ```r
 library(shiny)       # for shiny
@@ -30,8 +30,8 @@ library(rnaturalearth) # for world map data
 library(htmltools)   # Used for label formatting
 library(viridis)     # Added for color palettes in ggplot
 library(bslib)       # for modern Shiny UI toolkit
-library(plotly)      # for creation of plotly charts
-library(shinyWidgets) # for pretty switch for regression line
+library(plotly)      # for creating plotly charts
+library(shinyWidgets) # for toggle switch for regression line
 library(ggthemes)    # for plot themes
 library(paletteer)   # for plot themes
 library(thematic)    # To carry over the Shiny app theme into the server
@@ -56,7 +56,7 @@ Each tab in the app includes user inputs that filter, animate, and customize the
 -	Select a Country: A selectInput for choosing a country to view its historical water access and related indicators. Changing the selection triggers a modal with plots and data tables.
 -	Clickable Map: An interactive leaflet map where clicking a country automatically updates the country selection and opens the same modal.
 
-### Description of outputs
+### Description of Outputs
 Each tab produces dynamic visualizations and data tables that respond to user selections in real time.
 ### Health Impact Tab
 -	Global Water Access Map: A leaflet output showing the percentage of the population with basic or safely managed water, colored by value and annotated with tooltips.
@@ -80,12 +80,12 @@ All outputs are rendered using ggplot2, plotly, and DT, enabling zoom, hover, an
 The server logic connects user inputs with the underlying datasets and reactive visualizations. 
 ### Health Impact Tab
 -	Data Preparation: Reactive expressions filter and merge WHO indicators based on user-selected year and water access type.
--	Scatter and Line Charts: renderPlot functions generate ggplot visualizations that automatically adjust to the selected year. If no overlapping data exists, a message “No data available for this year” appears instead of a blank plot.
+-	Scatter and Line Charts: renderPlot() functions generate ggplot visualizations that automatically adjust to the selected year. If no overlapping data exists, a message “No data available for this year” appears instead of a blank plot.
 -	Map Rendering: The leaflet output dynamically updates when inputs change, recoloring polygons and refreshing legends accordingly.
 ### Hidden Burden Tab
 -	Reactive Filtering: Each panel filters DHS or World Bank data by region and year range, precomputing mean values for aggregation.
 -	Plot Creation: Charts are built using ggplot2 and converted to interactive format via ggplotly(). 
--	Modal Tables: renderDT creates detailed data tables that appear only when users click “Show Data.” Observers track these clicks and trigger the modal display.
+-	Modal Tables: renderDT() creates detailed data tables that appear only when users click “Show Data.” Observers track these clicks and trigger the modal display.
 ### Explore Country Data Tab
 -	Map Interaction: A leaflet map displays countries with clickable polygons linked to country ISO codes and names. When clicked, an observer updates the selected country input.
 -	Modal Generation: Observers open a modal containing three outputs, two charts and one table, filtered by the selected country.
@@ -94,7 +94,7 @@ The server logic connects user inputs with the underlying datasets and reactive 
 - The animated global map demonstrates steady improvements in access to safe drinking water over the past two decades, yet significant disparities persist. Sub-Saharan Africa remains the most affected region, with many countries showing less than 50% access to safely managed water.
 -	The scatter plots show a clear positive association between safe water access and life expectancy, highlighting how clean water is linked to improved population health outcomes.
 -	In Sub-Saharan Africa, over two-thirds of households rely on women or girls to collect water. In many countries, they spend more than 30 minutes per trip, reducing time for education and work while increasing risks of injury and gender-based violence.
--	Countries with higher access to safe water also show lower rates of adolescent girls out of school, suggesting that improving water infrastructure can have cascading benefits for the social determinants of health including education status.
+-	Countries with higher access to safe water also show lower rates of adolescent girls being out of school, suggesting that improving water infrastructure can have cascading benefits for the social determinants of health including education status.
    
 ## Collaboration and Roles
 This project was completed collaboratively using GitHub branching and pull requests.
