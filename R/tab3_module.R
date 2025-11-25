@@ -39,7 +39,7 @@ explore_countryUI <- function(id, title){
     absolutePanel(
       wellPanel(
         selectInput(NS(id, "country_selected"),
-        "Select a country to view data",
+        "Select or click on a country to view data",
         choices = c(sort(unique(safe_water_total$Country))),     # The available choices are based on basic water access data
         selected = "Tanzania"
         )
@@ -131,8 +131,13 @@ explore_countryServer <- function(id){
         # Convert the click ID (ISO code) to country name
         country_name <- countrycode(sourcevar = click$id, origin = "iso3c", destination = "country.name")
         
-        # Update the selectInput's selected value to match the country clicked
-        updateSelectInput(session, "country_selected", selected = country_name)
+        # If the country clicked is not in the list, show a warning message.
+        if (!(country_name %in% unique(safe_water_total$Country))){
+          showNotification("No data available for this country. Please try again.", type = "warning")
+        } else{
+          # Update the selectInput's selected value to match the country clicked
+          updateSelectInput(session, "country_selected", selected = country_name)
+        }
         
       }) %>% 
       bindEvent(input$water_access_map_shape_click)
@@ -200,7 +205,10 @@ explore_countryServer <- function(id){
     output$time_to_obtain_water_over_years <- renderPlotly({
       req(input$country_selected)
       base <- time_obtain_water %>%
-        filter (Country == input$country_selected)
+        filter (Country == input$country_selected) %>% 
+        # If more than one copy of data from the same year is available, take the average
+        group_by (Country, Year, Indicator) %>% 
+        summarize (Value = mean(Value)) %>% ungroup()
       
       if (nrow(base) == 0) {
         p <- ggplot() + 

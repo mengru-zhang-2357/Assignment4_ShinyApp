@@ -72,7 +72,7 @@ hidden_burdenUI <- function(id, title){
         # 3. School unenrollment chart: define the key message, quote from literature, plotly chart, and a button that opens a modal for the user to review the data
         accordion_panel(
           value = "school",
-          title = "This leads to more girls out of school...",
+          title = "This is associated with more girls out of school...",
           icon = bsicons::bs_icon("droplet-half"),
           p(em("\"A standard deviation increase in water insecurity resulted in 0.30 more missed school days in the last week.\"")),
           p(style = "text-align: right;", "-- Cooper-Vince et al., 2017"),
