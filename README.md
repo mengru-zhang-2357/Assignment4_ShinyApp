@@ -33,6 +33,8 @@ library(bslib)       # for modern Shiny UI toolkit
 library(plotly)      # for creation of plotly charts
 library(shinyWidgets) # for pretty switch for regression line
 library(ggthemes)    # for plot themes
+library(paletteer)   # for plot themes
+library(thematic)    # To carry over the Shiny app theme into the server
 
 ```
 
